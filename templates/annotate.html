@@ -1,0 +1,85 @@
+<!--
+annotate.html - Direct upload to Amazon S3 using signed POST request
+Copyright (C) 2015-2024 Vas Vasiliadis <vas@uchicago.edu>
+University of Chicago
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Annotate{% endblock %}
+
+{% block body %}
+
+    {% include "header.html" %}
+
+    <div class="container">
+
+        <script>
+            var role = "{{ role }}";
+            console.log(role);
+            var isPremiumUser = role == 'premium_user' ? true : false;
+            console.log(isPremiumUser)
+            function checkFileSize() {
+                var fileInput = document.getElementById('upload-file');
+                var fileSize = fileInput.files[0] ? fileInput.files[0].size : 0;
+                var maxSize = isPremiumUser ? Infinity : 153600;
+                if (fileSize > maxSize && !isPremiumUser) {
+                    var confirmed = window.confirm('Free users are limited to the max file size of 150 KB!\nClick OK to upgrade to premium.');
+                    if (confirmed) {
+                        window.location.href = '/subscribe';
+                    } else {
+                        fileInput.value = '';
+                    }
+                }
+            }
+
+            // For some reason submitButton.disabled isn't working, tried debugging but couldnt figure out the reason
+            /* function toggleSubmitButton() {
+                var fileInput = document.getElementById('upload-file');
+                var submitButton = document.getElementById('annotateButton');
+
+                var fileName = fileInput.value;
+                var isValidFile = fileName !== '' && fileName.toLowerCase().endsWith('.vcf');
+
+                var fileSize = fileInput.files[0] ? fileInput.files[0].size : 0;
+                var maxSize = isPremiumUser ? Infinity : 153600;
+
+                console.log(!isValidFile || (fileSize > maxSize && !isPremiumUser))
+                submitButton.disabled = !isValidFile || (fileSize > maxSize && !isPremiumUser);
+            } */
+        </script>
+    
+        <div class="page-header">
+            <h1>Annotate VCF File</h1>
+        </div>
+
+        <div class="form-wrapper">
+            <form role="form" action="{{ s3_post.url }}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% for key, value in s3_post.fields.items() %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}" />
+                {% endfor %}
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="upload">Select VCF Input File</label>
+                        <div class="input-group col-md-12">
+                            <span class="input-group-btn">
+                                <span class="btn btn-default btn-file btn-lg">Browse&hellip; <input type="file" name="file" id="upload-file" onchange="checkFileSize()" /></span>
+                            </span>
+                            <input type="text" class="form-control col-md-6 input-lg" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <br />
+
+                <div class="form-actions">
+                    <input class="btn btn-lg btn-primary" type="submit" value="Annotate" id="annotateButton" />
+                </div>
+            </form>
+        </div>
+    
+    </div> <!-- container -->
+
+{% endblock %}

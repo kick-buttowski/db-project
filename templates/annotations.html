@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Annotations{% endblock %}
+
+{% block body %}
+
+    {% include "header.html" %}
+
+    <div class="container">
+
+        <div class="page-header">
+            <h1>My Annotations</h1>
+        </div>
+
+        <div class="row text-right">
+            <a href="{{ url_for('annotate') }}" title="Request New Annotation">
+                <button type="button" class="btn btn-link" aria-label="Request New Annotation">
+                    <i class="fa fa-plus fa-lg"></i> Request New Annotation
+                </button>
+            </a>
+        </div>
+
+        {% if annotations %}
+            <table class="table" style="margin-top: 20px">
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request Time</th>
+                    <th>VCF File Name</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for annotation in annotations %}
+                    <tr>
+                        <td style="font-size: 15px; padding-top: 0px; padding-bottom: 0px">
+                            <a href="{{ url_for('annotation_details', id=annotation.job_id) }}" title="Request ID">
+                                <button type="button" class="btn btn-link" aria-label="Request New Annotation">
+                                    <i class="fa fa-plus fa-lg"></i> {{annotation.job_id}}
+                                </button>
+                            </a>
+                        </td>
+                        <td style="font-size: 15px;">{{annotation.submit_time}}</td>
+                        <td style="font-size: 15px;">{{annotation.input_file_name}}</td>
+                        <td style="font-size: 15px;">{{annotation.job_status}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No annotations found.</p>
+        {% endif %}
+
+    </div> <!-- container -->
+
+{% endblock %}

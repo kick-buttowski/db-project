@@ -1,0 +1,80 @@
+<!--
+annotation.html - Display details about a user's annotation job
+Copyright (C) 2015-2023 Vas Vasiliadis <vas@uchicago.edu>
+University of Chicago
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Annotation Details{% endblock %}
+
+{% block body %}
+    
+    {% include "header.html" %}
+
+    <div class="container">
+
+        <div class="page-header">
+            <h1>Annotation Details</h1>
+        </div>
+
+        {% if annotation %}
+            <div style="display: ruby;">
+                <h4>Request ID: </h4>
+                <p style="font-size: 15px; margin: 5px 0 15px 0"> {{annotation.job_id}} </p>
+            </div>
+            <br>
+            <div style="display: ruby;">
+                <h4>Request Time: </h4>
+                <p style="font-size: 15px; margin: 5px 0 15px 0"> {{annotation.submit_time}} </p>
+            </div>
+            <br>
+            <div style="display: ruby;">
+                <h4>VCF Input File: </h4>
+                <a href="{{ annotation.s3_input_obj_download_url }}" title="Download Input File" style="font-size: 15px; margin: 5px 0 15px 0">
+                    {{annotation.input_file_name}}
+                </a>
+            </div>
+            <br>
+            <div style="display: ruby;">
+                <h4>Status: </h4>
+                <p style="font-size: 15px; margin: 5px 0 15px 0"> {{annotation.job_status}} </p>
+            </div>
+            <br>
+            {% if 'COMPLETED' == annotation.job_status %}
+                <div style="display: ruby;">
+                    <h4>Complete Time: </h4>
+                    <p style="font-size: 15px; margin: 5px 0 15px 0"> {{annotation.complete_time}} </p>
+                </div>
+                <br>
+                <hr />
+                <div style="display: ruby;">
+                    <h4>Annotated Results File: </h4>
+                    {% if annotation.show_results_download == 'Y' %}
+                        <a href="{{ annotation.s3_result_obj_download_url }}" title="Download Input File" style="font-size: 15px; margin: 5px 0 15px 0">
+                            download
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('subscribe') }}" title="upgrade to Premium for download" style="font-size: 15px; margin: 5px 0 15px 0">
+                            upgrade to Premium for download
+                        </a>
+                    {% endif %}
+                </div>
+                <br>
+                <div style="display: ruby;">
+                    <h4>Annotation Log File: </h4>
+                    <a href="{{ url_for('annotation_log', id=annotation.job_id) }}" title="View Log" style="font-size: 15px; margin: 5px 0 15px 0">
+                        view
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+
+
+        <hr />
+
+        <a href="{{ url_for('annotations_list') }}">&larr; back to annotations list</a>
+
+    </div> <!-- container -->
+
+{% endblock %}
