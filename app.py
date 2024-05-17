@@ -9,6 +9,7 @@ import sqlite3
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
+
 def get_db():
     db = getattr(g, '_database', None)
 
@@ -36,9 +37,60 @@ def query_db(query, args=(), one=False):
         return rows
     return None
 
+## home page route
 @app.route('/')
+def home():
+    return render_template('home_page.html')
+
+## login route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        # Query the database to check if the user exists and the password is correct
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
+        user = cursor.fetchone()
+        cursor.close()
+
+        if user:
+            # Successful login, redirect to home page or dashboard
+            return redirect(url_for('home_page'))
+        else:
+            # Failed login, set error message
+            error = "Invalid username or password. Please try again."
+    return render_template('login_page.html', error=error)
+
+## signup route
+# this page is not working
+app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Check if username already exists in the database
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+
+        if user:
+            error = "Username already exists. Please choose a different username."
+        else:
+            # Insert new user into the database
+            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+            db.commit()
+            cursor.close()
+            return redirect(url_for('login_page'))  # Redirect to login page after successful signup
+
+    return render_template('signup.html', error=error)
+
+
 @app.route('/profile')
-@app.route('/login')
 @app.route('/room')
 @app.route('/room/<chat_id>')
 def index(chat_id=None):
@@ -84,7 +136,7 @@ def signup():
         return {'api_key': user['api_key'], 'user_id': user['id'], 'user_name': user['name']}
     return {'Status: unable to create the user!'}, 401
 
-
+'''
 @app.route('/api/login', methods = ['POST'])
 def login():
     print("login")
@@ -97,6 +149,7 @@ def login():
             return {'api_key': ''}
         return {'api_key': u[1], 'user_id': u[0], 'user_name': u[2]}
     return {'api_key': ''}
+'''
 
 @app.route('/api/rooms/new', methods=['POST'])
 def create_room():

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Properties</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <p><a href="/login">Login</a></p>
+        <h2>HavenQuest</h2>
+        <p>Find your dream home or property today.</p>
+    </div>
+</section>
+
+<!-- Featured Properties -->
+<section class="featured-properties">
+    <div class="container">
+        <h2>Featured Properties</h2>
+        <!-- Display properties here, need to get info from DB query-->
+        <div class="property">
+            <img src="{{ url_for('static', filename='img/property1.jpg') }}" alt="Property 1">
+            <h3>Property Name</h3>
+            <p>Address: Property Address</p>
+            <p>Price: $XXXXX</p>
+        </div>
+        <!-- Add more featured properties as needed -->
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>&copy; 2024 Real Estate Properties. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Add your JavaScript files here if needed -->
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
