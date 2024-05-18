@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Estate Properties</title>
-    <!-- Add your CSS stylesheets here -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
-        <p><a href="/login">Login</a></p>
+        {% if session.logged_in %}
+            <!-- Display welcome message if user is logged in -->
+            <p>Welcome, {{ session.username }}!</p>
+            <p><a href="/logout">Logout</a></p>
+        {% else %}
+            <!-- Display login button if user is not logged in -->
+            <p><a href="/login">Login</a></p>
+        {% endif %}
         <h2>HavenQuest</h2>
         <p>Find your dream home or property today.</p>
     </div>

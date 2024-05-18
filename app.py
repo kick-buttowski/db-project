@@ -1,72 +1,73 @@
+'''
 import string
 import random
 from datetime import datetime
 from flask import Flask, g
 from functools import wraps
-from flask import *
+from flask import Flask, render_page
 import sqlite3
+'''
+import pymysql
+from flask import Flask, render_template, url_for, request, redirect, session
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.secret_key = 'your_secret_key'  # Secret key for session management
+
+# MySQL Database Configuration
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'rootUser123#'
+app.config['MYSQL_DB'] = 'HavenQuest'
+
+# Create MySQL Connection
+db = pymysql.connect(
+    host=app.config['MYSQL_HOST'],
+    user=app.config['MYSQL_USER'],
+    password=app.config['MYSQL_PASSWORD'],
+    db=app.config['MYSQL_DB'],
+    cursorclass=pymysql.cursors.DictCursor  # Use dictionary cursor for easy data access
+)
+
+cursor = db.cursor()
+db.autocommit(True)
 
 
-def get_db():
-    db = getattr(g, '_database', None)
+# --------------------------- ROUTES ---------------------------
 
-    if db is None:
-        db = g._database = sqlite3.connect('db/watchparty.sqlite3')
-        db.row_factory = sqlite3.Row
-        setattr(g, '_database', db)
-    return db
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
-
-def query_db(query, args=(), one=False):
-    db = get_db()
-    cursor = db.execute(query, args)
-    rows = cursor.fetchall()
-    db.commit()
-    cursor.close()
-    if rows:
-        if one: 
-            return rows[0]
-        return rows
-    return None
-
-## home page route
 @app.route('/')
 def home():
     return render_template('home_page.html')
 
-## login route
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        # Query the database to check if the user exists and the password is correct
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
-        user = cursor.fetchone()
-        cursor.close()
-
-        if user:
-            # Successful login, redirect to home page or dashboard
-            return redirect(url_for('home_page'))
+        if authenticate_user(username, password):
+            # Redirect to home page or dashboard upon successful login
+            return redirect(url_for('home'))
         else:
-            # Failed login, set error message
-            error = "Invalid username or password. Please try again."
-    return render_template('login_page.html', error=error)
+            # Authentication failed, display error message or redirect to login page
+            return "Invalid username or password. Please try again."
+    else:
+        # Render login form
+        return render_template('login_page.html')
+
+
+@app.route('/logout')
+def logout():
+    # Clear session variables
+    session.clear()
+    # Redirect the user to the home page
+    return redirect(url_for('home'))
+
 
 ## signup route
-# this page is not working
-app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
     if request.method == 'POST':
@@ -85,23 +86,51 @@ def signup():
             cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
             db.commit()
             cursor.close()
-            return redirect(url_for('login_page'))  # Redirect to login page after successful signup
+            return redirect(url_for('login'))  # Redirect to login page after successful signup
 
     return render_template('signup.html', error=error)
 
 
-@app.route('/profile')
-@app.route('/room')
-@app.route('/room/<chat_id>')
-def index(chat_id=None):
-    return app.send_static_file('index.html')
+# --------------------------- FUNCTIONS ---------------------------
+
+# Function to authenticate user
+def authenticate_user(username, password):
+    # Query the database to retrieve user information
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
+    user = cursor.fetchone()
+    cursor.close()
+
+    if user:
+        # User exists in the database
+        session['logged_in'] = True  # Set session variable to mark user as logged in
+        session['username'] = user['username']  # Optionally store user information in session
+        return True
+    else:
+        # Invalid credentials
+        return False
+    
+
+# --------------------------- ERROR + RUN APP + MISC ---------------------------
+
 
 @app.errorhandler(404)
 def page_not_found(e):
     return app.send_static_file('404.html'), 404
 
+# run + debug on
+if __name__ == "__main__":
+    app.run(debug=True)
+
+'''
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(db, 'close'):
+        db.close()
+'''
 
 
+'''
 # -------------------------------- API ROUTES ----------------------------------
 
 def new_user():
@@ -136,7 +165,6 @@ def signup():
         return {'api_key': user['api_key'], 'user_id': user['id'], 'user_name': user['name']}
     return {'Status: unable to create the user!'}, 401
 
-'''
 @app.route('/api/login', methods = ['POST'])
 def login():
     print("login")
@@ -149,7 +177,6 @@ def login():
             return {'api_key': ''}
         return {'api_key': u[1], 'user_id': u[0], 'user_name': u[2]}
     return {'api_key': ''}
-'''
 
 @app.route('/api/rooms/new', methods=['POST'])
 def create_room():
@@ -262,3 +289,4 @@ def signup_details():
 @app.route('/api/error', methods = ['POST'])
 def panic():
     return app.send_static_file('404.html'), 404
+'''
