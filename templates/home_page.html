@@ -3,41 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Estate Properties</title>
+    <title>HavenQuest</title>
+    <link rel="icon" type="image/x-icon" href="/static/img/logo.ico">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="/static/js/script.js" defer> </script>
+    <script>
+        function loadHomePage() {
+            window.location.href = "{{ url_for('home') }}";
+        }
+    </script>
 </head>
 <body>
 
-<!-- Hero Section -->
-<section class="hero">
-    <div class="container">
+
+<header>
+    <div class="logo"  onclick="loadHomePage()">
+        <img src="/static/img/logo.ico" alt="HavenQuest Logo">
+    </div>
+    <div class="welcome-container">
         {% if session.logged_in %}
             <!-- Display welcome message with username as a link if user is logged in -->
-            <p>Welcome, <a href="{{ url_for('profile', username=session.username) }}">{{ session.username }}</a>!</p>
+            <!-- <p>Welcome, <a href="{{ url_for('profile', username=session.username) }}">{{ session.username }}</a>!</p> -->
+            <div class="user-profile" onclick="userProfile()">
+                <span class="material-symbols-outlined">
+                    account_circle
+                </span>
+            </div>
             <p><a href="{{ url_for('logout') }}">Logout</a></p>
         {% else %}
             <!-- Display login button if user is not logged in -->
             <p><a href="{{ url_for('login') }}">Login</a></p>
         {% endif %}
-        <h2>HavenQuest</h2>
-        <p>Find your dream home or property today.</p>
     </div>
-</section>
+</header>
 
+<div class="container">
+    <aside class="filters">
+        <h2>Filters</h2>
+        <div class="filter-group">
+            <label for="minPrice">Minimum Price:</label>
+            <input type="number" id="minPrice" name="minPrice">
+        </div>
+        <div class="filter-group">
+            <label for="maxPrice">Maximum Price:</label>
+            <input type="number" id="maxPrice" name="maxPrice">
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div class="filter-group">
+            <label for="city">City:</label>
+            <select id="city" name="city">
+                <option value="">Select City</option>
+                {% for city in cities %}
+                    <option value="{{ city.CITY }}">{{ city.CITY }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div class="filter-group">
+            <label for="numBedrooms">Number of Bedrooms:</label>
+            <select id="numBedrooms" name="numBedrooms">
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="numBathrooms">Number of Bathrooms:</label>
+            <select id="numBathrooms" name="numBathrooms">
+            </select>
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div class="filter-group">
+            <div id="societies" style="display: none;">
+                <label for="societyNames">Society:</label>
+                <select id="societyNames" name="societyNames">
+                </select>
+            </div>
+        </div>
+        <div class="filter-group">
+            <div id="agencies" style="display: none;">
+                <label for="agencyNames">Agency Name:</label>
+                <select id="agencyNames" name="agencyNames">
+                    
+                </select>
+            </div>
+        </div>
+        <button id="applyFiltersBtn">Apply Filters</button>
+    </aside>
+    <main class="properties">
+        <h1>Properties</h1>
+        <div id="propertyList" class="property-list">
+        </div>
+    </main>
+</div>
 
 <!-- Featured Properties -->
-<section class="featured-properties">
+<!-- <section class="featured-properties">
     <div class="container">
-        <h2>Featured Properties</h2>
+        <h2>Featured Properties</h2> -->
         <!-- Display properties here, need to get info from DB query-->
-        <div class="property">
+        <!-- <div class="property">
             <img src="{{ url_for('static', filename='img/property1.jpg') }}" alt="Property 1">
             <h3>Property Name</h3>
             <p>Address: Property Address</p>
             <p>Price: $XXXXX</p>
-        </div>
+        </div> -->
         <!-- Add more featured properties as needed -->
-    </div>
-</section>
+    <!-- </div>
+</section> -->
 
 <!-- Footer -->
 <footer>
