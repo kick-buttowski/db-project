@@ -1,7 +1,7 @@
 import mysql.connector
 import csv
 
-myConnection = mysql.connector.connect(user = 'root', password = 'mysqladmin123', 
+myConnection = mysql.connector.connect(user = 'root', password = 'rootUser123#', 
                                        host = 'localhost', database = 'RealEstate')
 
 cursorObject = myConnection.cursor()
@@ -22,6 +22,7 @@ with open('finaldata/society.csv', 'r') as file:
 
 myConnection.commit()
 """
+
 """
 with open('finaldata/agencies.csv', 'r') as file:
     csv_filereader = csv.reader(file)
@@ -38,6 +39,7 @@ with open('finaldata/agencies.csv', 'r') as file:
 
 myConnection.commit()
 """
+
 """
 with open('finaldata/agents.csv', 'r') as file:
     csv_filereader = csv.reader(file)
@@ -54,6 +56,7 @@ with open('finaldata/agents.csv', 'r') as file:
 
 myConnection.commit()
 """
+
 """
 with open('finaldata/features.csv', 'r') as file:
     csv_filereader = csv.reader(file)
@@ -75,17 +78,20 @@ with open('finaldata/user.csv', 'r') as file:
     csv_filereader = csv.reader(file)
     header_flag = True
     for row in csv_filereader:
-        if(header_flag):
+        if header_flag:
             header_flag = False
             continue
 
-        userID,username,email = [elem for elem in row]
         
-        cursorObject.execute('insert into User values (%s, %s, %s)',
-                             (userID,username,email))
+        userID, username, email, password = row
+        
+        
+        cursorObject.execute('INSERT INTO User (userID, username, email, password) VALUES (%s, %s, %s, %s)',
+                             (userID, username, email, password))
 
 myConnection.commit()
 """
+
 """
 with open('finaldata/userprofile.csv', 'r') as file:
     csv_filereader = csv.reader(file)
@@ -102,6 +108,7 @@ with open('finaldata/userprofile.csv', 'r') as file:
 
 myConnection.commit()
 """
+
 """
 with open('finaldata/amenity_preference.csv', 'r') as file:
     csv_filereader = csv.reader(file)
@@ -117,6 +124,27 @@ with open('finaldata/amenity_preference.csv', 'r') as file:
                              (userID,Feature_ID))
 
 myConnection.commit()
+"""
+
+## not loaded
+"""
+with open('finaldata/properties.csv', 'r') as file:
+    csv_filereader = csv.reader(file)
+    header_flag = True
+    for row in csv_filereader:
+        if (header_flag):
+            header_flag = False
+            continue
+
+        PROP_ID, DESCRIPTION, PROPERTY_TYPE, CITY, LOCALITY, OWNTYPE, BEDROOM_NUM, BATHROOM_NUM, BALCONY_NUM, AGE, FLOOR_NUM, PROP_NAME, LISTING, MAP_DETAILS, PROP_HEADING, AGENT_ID, AREA, SOCIETY_ID, VERIFIED, RENTAL_PRICE, PURCHASE_PRICE, REGISTER_DATE = [
+            elem for elem in row]
+
+        cursorObject.execute(
+            'insert into Property values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, '
+            '%s, %s, %s)',
+            (PROP_ID, DESCRIPTION, PROPERTY_TYPE, CITY, LOCALITY, OWNTYPE, BEDROOM_NUM, BATHROOM_NUM, BALCONY_NUM, AGE,
+             FLOOR_NUM, PROP_NAME, LISTING, MAP_DETAILS, PROP_HEADING, AGENT_ID, AREA, SOCIETY_ID, VERIFIED,
+             RENTAL_PRICE, PURCHASE_PRICE, REGISTER_DATE))
 """
 """
 with open('finaldata/favorites.csv', 'r') as file:

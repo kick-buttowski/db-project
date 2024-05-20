@@ -11,17 +11,18 @@
 <section class="hero">
     <div class="container">
         {% if session.logged_in %}
-            <!-- Display welcome message if user is logged in -->
-            <p>Welcome, {{ session.username }}!</p>
-            <p><a href="/logout">Logout</a></p>
+            <!-- Display welcome message with username as a link if user is logged in -->
+            <p>Welcome, <a href="{{ url_for('profile', username=session.username) }}">{{ session.username }}</a>!</p>
+            <p><a href="{{ url_for('logout') }}">Logout</a></p>
         {% else %}
             <!-- Display login button if user is not logged in -->
-            <p><a href="/login">Login</a></p>
+            <p><a href="{{ url_for('login') }}">Login</a></p>
         {% endif %}
         <h2>HavenQuest</h2>
         <p>Find your dream home or property today.</p>
     </div>
 </section>
+
 
 <!-- Featured Properties -->
 <section class="featured-properties">

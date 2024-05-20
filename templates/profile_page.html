@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<!-- Header -->
+<header>
+    <div class="container">
+        <p><a href="{{ url_for('home') }}">Home</a></p>
+        {% if session.get('logged_in') %}
+            <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Login</a></p>
+        {% endif %}
+        <h1>{{ user.username }}'s Profile</h1>
+    </div>
+</header>
+
+<!-- Profile Section -->
+<section class="profile">
+    <div class="container">
+        <h2>User Information</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        
+            <h3>Additional Profile Information</h3>
+            <p><strong>First Name:</strong> {{ user_profile.firstName }}</p>
+            <p><strong>Last Name:</strong> {{ user_profile.lastName }}</p>
+            <p><strong>Date of Birth:</strong> {{ user_profile.dateOfBirth }}</p>
+            <p><strong>Gender:</strong> {{ user_profile.gender }}</p>
+            <p><strong>Phone Number:</strong> {{ user_profile.phoneNumber }}</p>
+            <p><strong>Address:</strong> {{ user_profile.address }}</p>
+            <h2>Amenity Preferences</h2>
+            <ul>
+                {% for amenity in amenities %}
+                <li>{{ amenity.featureName }}</li>
+                {% endfor %}
+            </ul>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p>&copy; 2024 Real Estate Properties. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

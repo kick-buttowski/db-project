@@ -19,7 +19,7 @@ app.secret_key = 'your_secret_key'  # Secret key for session management
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'rootUser123#'
-app.config['MYSQL_DB'] = 'HavenQuest'
+app.config['MYSQL_DB'] = 'RealEstate'
 
 # Create MySQL Connection
 db = pymysql.connect(
@@ -76,19 +76,46 @@ def signup():
 
         # Check if username already exists in the database
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT * FROM User WHERE username = %s", (username,))
         user = cursor.fetchone()
 
         if user:
             error = "Username already exists. Please choose a different username."
         else:
             # Insert new user into the database
-            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+            cursor.execute("INSERT INTO User (username, password) VALUES (%s, %s)", (username, password))
             db.commit()
             cursor.close()
             return redirect(url_for('login'))  # Redirect to login page after successful signup
 
     return render_template('signup.html', error=error)
+
+
+@app.route('/profile/<username>', methods=['GET'])
+def profile(username):
+    cursor = db.cursor()
+    
+    # Fetch user details from the database using username
+    cursor.execute("SELECT * FROM User WHERE username = %s", (username,))
+    user = cursor.fetchone()
+    
+    # Check if user exists
+    if user:
+        # Fetch user profile details using userID
+        cursor.execute("SELECT * FROM UserProfile WHERE userID = %s", (user['userID'],))
+        user_profile = cursor.fetchone()
+        
+        # Fetch amenity preferences for the user
+        cursor.execute("SELECT f.featureName FROM AmenityPreference ap JOIN Feature f ON ap.featureID = f.featureID WHERE ap.userID = %s", (user['userID'],))
+        amenities = cursor.fetchall()
+        
+        cursor.close()
+        
+        return render_template('profile_page.html', user=user, user_profile=user_profile, amenities=amenities)
+    else:
+        cursor.close()
+        return "User not found", 404
+
 
 
 # --------------------------- FUNCTIONS ---------------------------
@@ -97,7 +124,7 @@ def signup():
 def authenticate_user(username, password):
     # Query the database to retrieve user information
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
+    cursor.execute("SELECT * FROM User WHERE username = %s AND password = %s", (username, password))
     user = cursor.fetchone()
     cursor.close()
 

@@ -50,6 +50,10 @@ CREATE TABLE User (
     email VARCHAR(255),
     PRIMARY KEY (userID)
 );
+
+ALTER TABLE User
+ADD COLUMN password VARCHAR(255);
+
 SELECT *
 FROM User;
 DROP TABLE User;
