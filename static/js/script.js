@@ -28,6 +28,28 @@ document.addEventListener('DOMContentLoaded', async function () {
     await populateBathrooms('');
 });
 
+async function logCheckboxStatus() {
+    var checkbox = document.getElementById('myCheckbox');
+
+    if(checkbox.checked){
+        data = await fetch('/api/amenity-pref', {
+            method: 'GET'
+        });
+        amenities = await data.json();
+
+        amenities.forEach(function (amenity) {
+            addSelectedFeature(amenity.featureName);
+        });
+    } else {
+        var featureElements = document.querySelectorAll('.selected-feature');
+        featureElements.forEach(function(element) {
+            element.remove();
+        });
+    }
+
+    console.log('Checkbox checked status:', checkbox.checked);
+}
+
 // Function to populate property types based on selected city
 async function populateFeatureTypes(city) {
     var featureSelect = document.getElementById('featureSelect');
@@ -196,44 +218,6 @@ async function fetchRandomProperties() {
     displayProperties(properties);
 }
 
-function getSelectedFeatures() {
-    var selectedFeatures = [];
-    var featureElements = document.querySelectorAll('.selected-feature');
-    featureElements.forEach(function(element) {
-        selectedFeatures.push(element.textContent.trim());
-    });
-    return selectedFeatures;
-}
-
-async function applyFilters() {
-    var minPrice = document.getElementById('minPrice').value;
-    var maxPrice = document.getElementById('maxPrice').value;
-    var city = document.getElementById('city').value;
-    var bedrooms = document.getElementById('numBedrooms').value;
-    var bathrooms = document.getElementById('numBathrooms').value;
-    var society = document.getElementById('societyNames').value;
-    var agency = document.getElementById('agencyNames').value;
-    var propType = document.getElementById('propertyTypes').value;
-    var selectedFeatures = getSelectedFeatures();
-    var selectedFeaturesString = selectedFeatures.join(',');
-
-    // Make AJAX request to fetch properties based on filters
-    data = await fetch('/filter?minPrice=' + minPrice + 
-                        '&maxPrice=' + maxPrice + 
-                        '&city=' + city + 
-                        '&bedrooms=' + (bedrooms == "" ? "": parseInt(bedrooms)) +
-                        '&bathrooms=' + (bathrooms == "" ? "": parseInt(bathrooms)) +
-                        '&agency=' + agency +
-                        '&propType=' + propType +
-                        '&selectedFeatures=' + selectedFeaturesString + 
-                        '&society=' + society, {
-                            method: 'GET'
-                        }
-                    );
-    filteredProperties = await data.json();
-    displayProperties(filteredProperties);
-}
-
 function displayProperties(properties) {
     var propertyList = document.getElementById('propertyList');
     propertyList.innerHTML = '';
@@ -301,4 +285,42 @@ async function populateBedrooms(city) {
         option.textContent = bedroom.NUMBEDROOMS + ' Bedrooms';
         bedroomsSelect.appendChild(option);
     });
+}
+
+function getSelectedFeatures() {
+    var selectedFeatures = [];
+    var featureElements = document.querySelectorAll('.selected-feature');
+    featureElements.forEach(function(element) {
+        selectedFeatures.push(element.textContent.trim());
+    });
+    return selectedFeatures;
+}
+
+async function applyFilters() {
+    var minPrice = document.getElementById('minPrice').value;
+    var maxPrice = document.getElementById('maxPrice').value;
+    var city = document.getElementById('city').value;
+    var bedrooms = document.getElementById('numBedrooms').value;
+    var bathrooms = document.getElementById('numBathrooms').value;
+    var society = document.getElementById('societyNames').value;
+    var agency = document.getElementById('agencyNames').value;
+    var propType = document.getElementById('propertyTypes').value;
+    var selectedFeatures = getSelectedFeatures();
+    var selectedFeaturesString = selectedFeatures.join(',');
+
+    // Make AJAX request to fetch properties based on filters
+    data = await fetch('/filter?minPrice=' + minPrice + 
+                        '&maxPrice=' + maxPrice + 
+                        '&city=' + city + 
+                        '&bedrooms=' + (bedrooms == "" ? "": parseInt(bedrooms)) +
+                        '&bathrooms=' + (bathrooms == "" ? "": parseInt(bathrooms)) +
+                        '&agency=' + agency +
+                        '&propType=' + propType +
+                        '&selectedFeatures=' + selectedFeaturesString + 
+                        '&society=' + society, {
+                            method: 'GET'
+                        }
+                    );
+    filteredProperties = await data.json();
+    displayProperties(filteredProperties);
 }

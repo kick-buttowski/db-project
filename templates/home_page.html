@@ -24,12 +24,7 @@
     <div class="welcome-container">
         {% if session.logged_in %}
             <!-- Display welcome message with username as a link if user is logged in -->
-            <!-- <p>Welcome, <a href="{{ url_for('profile', username=session.username) }}">{{ session.username }}</a>!</p> -->
-            <div class="user-profile" onclick="userProfile()">
-                <span class="material-symbols-outlined">
-                    account_circle
-                </span>
-            </div>
+            <p><a href="{{ url_for('profile') }}">View Profile</a></p>
             <p><a href="{{ url_for('logout') }}">Logout</a></p>
         {% else %}
             <!-- Display login button if user is not logged in -->
@@ -42,6 +37,14 @@
     <aside class="filters">
         <h2>Filters</h2>
         <br>
+        <label class="cb-container" >
+            <input type="checkbox" id="myCheckbox" onclick="logCheckboxStatus()">
+            <span class="checkmark"></span>
+             Use My Preferences
+        </label>
+        <br>
+        <br>
+        <hr>
         <div class="filter-group">
             <label for="minPrice">Minimum Price:</label>
             <input type="number" id="minPrice" name="minPrice">
@@ -116,21 +119,6 @@
         </footer>
     </main>
 </div>
-
-<!-- Featured Properties -->
-<!-- <section class="featured-properties">
-    <div class="container">
-        <h2>Featured Properties</h2> -->
-        <!-- Display properties here, need to get info from DB query-->
-        <!-- <div class="property">
-            <img src="{{ url_for('static', filename='img/property1.jpg') }}" alt="Property 1">
-            <h3>Property Name</h3>
-            <p>Address: Property Address</p>
-            <p>Price: $XXXXX</p>
-        </div> -->
-        <!-- Add more featured properties as needed -->
-    <!-- </div>
-</section> -->
 
 </body>
 </html>
