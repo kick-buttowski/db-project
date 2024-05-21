@@ -128,5 +128,19 @@ with open('finaldata/amenity_preference.csv', 'r') as file:
 
         cursorObject.execute('insert into AmenityPreference values (%s, %s)',
                              (userID,Feature_ID))
+        
+
+with open('finaldata/property_features.csv', 'r') as file:
+    csv_filereader = csv.reader(file)
+    header_flag = True
+    for row in csv_filereader:
+        if header_flag:
+            header_flag = False
+            continue
+
+        propID, featureID = [elem for elem in row]
+
+        cursorObject.execute('insert into PropertyFeature values (%s, %s)',
+                             (propID, featureID))
 
 myConnection.commit()

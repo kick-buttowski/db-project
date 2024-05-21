@@ -15,14 +15,95 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('agencyNames').value = "";
         }
         
+        await populateFeatureTypes(selectedCity);
         await populateBedrooms(selectedCity);
+        await populatePropertyTypes(selectedCity);
         await populateBathrooms(selectedCity);
         await populateSocieties(selectedCity);
         await populateAgencies(selectedCity);
     });
+    await populateFeatureTypes('');
+    await populatePropertyTypes('');
     await populateBedrooms('');
     await populateBathrooms('');
 });
+
+// Function to populate property types based on selected city
+async function populateFeatureTypes(city) {
+    var featureSelect = document.getElementById('featureSelect');
+    var addFeatureBtn = document.getElementById('addFeatureBtn');
+
+    data = await fetch('/api/feature-names?city=' + (city || 'nocity'), {
+        method: 'GET'
+    });
+    features = await data.json();
+
+    featureSelect.innerHTML = ''
+    
+    var option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Select Feature';
+    featureSelect.appendChild(option);
+
+    features.forEach(function (feature) {
+        var option = document.createElement('option');
+        option.value = feature.FEATURENAME;
+        option.textContent = feature.FEATURENAME;
+        featureSelect.appendChild(option);
+    });
+
+    addFeatureBtn.addEventListener('click', function () {
+        var selectedFeature = featureSelect.value;
+        if (selectedFeature !== '') {
+            addSelectedFeature(selectedFeature);
+            featureSelect.value = '';
+        }
+    });
+}
+
+function addSelectedFeature(featureName) {
+    var selectedFeaturesContainer = document.getElementById('selectedFeatures');
+
+    var selectedFeatureBox = document.createElement('div');
+    selectedFeatureBox.classList.add('selected-feature');
+
+    var featureText = document.createElement('span');
+    featureText.textContent = featureName;
+    selectedFeatureBox.appendChild(featureText);
+
+    var closeIcon = document.createElement('span');
+    closeIcon.classList.add('close-icon');
+    closeIcon.innerHTML = ' x';
+    closeIcon.addEventListener('click', function () {
+      selectedFeatureBox.remove();
+    });
+    selectedFeatureBox.appendChild(closeIcon);
+
+    selectedFeaturesContainer.appendChild(selectedFeatureBox);
+}
+
+// Function to populate property types based on selected city
+async function populatePropertyTypes(city) {
+    var propertyTypes = document.getElementById('propertyTypes');
+    propertyTypes.innerHTML = '';
+
+    var option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Select Property Type';
+    propertyTypes.appendChild(option);
+
+    data = await fetch('/api/property-type?city=' + (city || 'nocity'), {
+        method: 'GET'
+    });
+    bathrooms = await data.json();
+
+    bathrooms.forEach(prop => {
+        var option = document.createElement('option');
+        option.value = prop.PROPERTYTYPE;
+        option.textContent = prop.PROPERTYTYPE;
+        propertyTypes.appendChild(option);
+    });
+}
 
 // Function to populate bathrooms based on selected city
 async function populateBathrooms(city) {
@@ -115,6 +196,15 @@ async function fetchRandomProperties() {
     displayProperties(properties);
 }
 
+function getSelectedFeatures() {
+    var selectedFeatures = [];
+    var featureElements = document.querySelectorAll('.selected-feature');
+    featureElements.forEach(function(element) {
+        selectedFeatures.push(element.textContent.trim());
+    });
+    return selectedFeatures;
+}
+
 async function applyFilters() {
     var minPrice = document.getElementById('minPrice').value;
     var maxPrice = document.getElementById('maxPrice').value;
@@ -123,6 +213,9 @@ async function applyFilters() {
     var bathrooms = document.getElementById('numBathrooms').value;
     var society = document.getElementById('societyNames').value;
     var agency = document.getElementById('agencyNames').value;
+    var propType = document.getElementById('propertyTypes').value;
+    var selectedFeatures = getSelectedFeatures();
+    var selectedFeaturesString = selectedFeatures.join(',');
 
     // Make AJAX request to fetch properties based on filters
     data = await fetch('/filter?minPrice=' + minPrice + 
@@ -131,6 +224,8 @@ async function applyFilters() {
                         '&bedrooms=' + (bedrooms == "" ? "": parseInt(bedrooms)) +
                         '&bathrooms=' + (bathrooms == "" ? "": parseInt(bathrooms)) +
                         '&agency=' + agency +
+                        '&propType=' + propType +
+                        '&selectedFeatures=' + selectedFeaturesString + 
                         '&society=' + society, {
                             method: 'GET'
                         }

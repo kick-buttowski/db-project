@@ -58,6 +58,8 @@ PROPERTIES_SELECT_QUERY = """SELECT PROP.PROPERTYID,
         FROM PROPERTY AS PROP
         {joins}
         {filters}
+        {groupby}
+        {having}
         {limit}"""
         
 LIMIT_SELECT = """LIMIT {lim}"""
@@ -81,18 +83,35 @@ FETCH_NUMBATHROOMS = """SELECT DISTINCT(NUMBATHROOMS) FROM PROPERTY ORDER BY NUM
 
 FETCH_NUMBATHROOMS_BY_CITY = """SELECT DISTINCT(NUMBATHROOMS) FROM PROPERTY WHERE CITY = %s ORDER BY NUMBATHROOMS ASC"""
 
+FETCH_PROPERTYTYPES = """SELECT DISTINCT(PROPERTYTYPE) FROM PROPERTY"""
+
+FETCH_PROPERTYTYPES_BY_CITY = """SELECT DISTINCT(PROPERTYTYPE) FROM PROPERTY WHERE CITY = %s"""
+
 FETCH_SOCIETIES_BY_CITY = """SELECT DISTINCT(SOCIETYNAME) FROM SOCIETY SC 
                             INNER JOIN PROPERTY PROP ON PROP.SOCIETYID = SC.SOCIETYID AND PROP.CITY = %s"""
                             
 FETCH_AGENCIES_BY_CITY = """SELECT DISTINCT(AGENCYNAME) FROM AGENCY AGC
 							INNER JOIN AGENT AG ON AGC.AGENCYID = AG.AGENCYID
                             INNER JOIN PROPERTY PROP ON PROP.AGENTID = AG.AGENTID AND PROP.CITY = %s"""
+                            
+FETCH_FEATURE_NAMES = """SELECT DISTINCT(FEATURENAME) FROM PROPERTY PROP
+	INNER JOIN PROPERTYFEATURE PF ON PF.PROPERTYID = PROP.PROPERTYID
+	INNER JOIN FEATURE FT ON FT.FEATUREID = PF.FEATUREID"""
+ 
+FETCH_FEATURE_NAMES_BY_CITY = """SELECT DISTINCT(FEATURENAME) FROM PROPERTY PROP
+	INNER JOIN PROPERTYFEATURE PF ON PF.PROPERTYID = PROP.PROPERTYID
+	INNER JOIN FEATURE FT ON FT.FEATUREID = PF.FEATUREID
+    WHERE PROP.CITY = %s"""
 
 INNER_JOIN_AGENCY_AGENTS = """INNER JOIN AGENCY AGC ON AGC.AGENCYID = AG.AGENCYID"""
 
 INNER_JOIN_PROPERTY_AGENT = """INNER JOIN AGENT AG ON AG.AGENTID = PROP.AGENTID"""
 
 INNER_JOIN_PROPERTY_SOCIETY = """INNER JOIN SOCIETY SC ON SC.SOCIETYID = PROP.SOCIETYID"""
+
+INNER_JOIN_PROPERTY_PROPFEATURES = """INNER JOIN PROPERTYFEATURE PF ON PF.PROPERTYID = PROP.PROPERTYID"""
+
+INNER_JOIN_PROPERTY_FEATURE =  """INNER JOIN FEATURE FT ON FT.FEATUREID = PF.FEATUREID"""
 
 all_bedrooms = dict()
 cities = dict()
@@ -193,6 +212,21 @@ def bedrooms():
     
     return jsonify(no_of_bedrooms), 200
 
+@app.route('/api/feature-names', methods=['GET'])
+def feature_names():
+    cursor = db.cursor()
+    city = request.args.get('city')
+    
+    if city == 'nocity':
+        cursor.execute(FETCH_FEATURE_NAMES)
+        all_features = cursor.fetchall()
+        return jsonify(all_features), 200
+    
+    cursor.execute(FETCH_FEATURE_NAMES_BY_CITY, (city))
+    features = cursor.fetchall()
+    
+    return jsonify(features), 200
+
 @app.route('/api/bathrooms', methods=['GET'])
 def bathrooms():
     # Hit the db and get no of bathrooms by city
@@ -208,6 +242,22 @@ def bathrooms():
     no_of_bathrooms = cursor.fetchall()
     
     return jsonify(no_of_bathrooms), 200
+
+
+@app.route('/api/property-type', methods=['GET'])
+def property_types():
+    cursor = db.cursor()
+    city = request.args.get('city')
+    
+    if city == 'nocity':
+        cursor.execute(FETCH_PROPERTYTYPES)
+        all_prop_types = cursor.fetchall()
+        return jsonify(all_prop_types), 200
+    
+    cursor.execute(FETCH_PROPERTYTYPES_BY_CITY, (city))
+    prop_types = cursor.fetchall()
+    
+    return jsonify(prop_types), 200
 
 
 @app.route('/api/agencies', methods=['GET'])
@@ -238,11 +288,15 @@ def filter():
     filters = request.args.to_dict()
     
     joins = str()
+    groupby = 'GROUP BY'
     prop_filters = 'WHERE'
+    having = 'HAVING'
     
     local_join_agency_agents = INNER_JOIN_AGENCY_AGENTS
     local_join_prop_agents = INNER_JOIN_PROPERTY_AGENT
     local_join_prop_society = INNER_JOIN_PROPERTY_SOCIETY
+    local_join_prop_propfeatures = INNER_JOIN_PROPERTY_PROPFEATURES
+    local_join_prop_feature = INNER_JOIN_PROPERTY_FEATURE
     
     for (key, value) in filters.items():
         if key == 'minPrice' and value:
@@ -255,15 +309,30 @@ def filter():
             prop_filters += f" numBedrooms = '{int(value)}' AND"
         elif key == 'bathrooms' and value:
             prop_filters += f" numBathrooms = '{int(value)}' AND"
+        elif key == 'propType' and value:
+            prop_filters += f" propertyType = '{str(value)}' AND"
+        elif key == 'selectedFeatures' and value:
+            local_join_prop_feature += ' AND FT.FEATURENAME IN ('
+            for feature in value.split(','):
+                feature_name = feature.rstrip(' x')
+                local_join_prop_feature += f"'{feature_name}', "
+            local_join_prop_feature = local_join_prop_feature.rstrip(", ")
+            local_join_prop_feature += ')'
+            groupby += ' PROP.PROPERTYID'
+            having += f" COUNT(DISTINCT FT.FEATURENAME) = {len(value.split(','))}"
         elif key == 'society' and value:
             local_join_prop_society += f" AND SC.SOCIETYNAME = '{str(value)}'"
         elif key == 'agency' and value:
             local_join_agency_agents += f" AND AGC.AGENCYNAME = '{str(value)}'"
         
-    joins += local_join_prop_agents + "\n" + local_join_agency_agents + "\n" + local_join_prop_society
+    joins += local_join_prop_agents + "\n" + local_join_agency_agents + "\n" + local_join_prop_society + "\n" + \
+        local_join_prop_propfeatures + "\n" + local_join_prop_feature
+    
     sql_query = PROPERTIES_SELECT_QUERY.format(joins=joins, 
-                                               filters=str() if prop_filters == 'WHERE' else prop_filters.rstrip("AND").rstrip(), 
-                                               limit=LIMIT_SELECT.format(lim=100))
+                                               filters=str() if prop_filters == 'WHERE' else prop_filters.rstrip().rstrip("AND"), 
+                                               limit=LIMIT_SELECT.format(lim=100),
+                                               groupby=str() if groupby == 'GROUP BY' else groupby,
+                                               having=str() if having == 'HAVING' else having)
     
     print(sql_query)
     cursor.execute(sql_query, (app.config['CURRENT_USER_ID']))
