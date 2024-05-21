@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property</title>
+    <title>HavenQuest</title>
     <link rel="icon" type="image/x-icon" href="/static/img/logo.ico">
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script src="/static/js/property.js" defer>
-    </script>
+    <script src="/static/js/property.js" defer> </script>
     <script>
         function loadHomePage() {
             window.location.href = "{{ url_for('home') }}";
@@ -16,22 +15,38 @@
     </script>
 </head>
 <body>
-    <header>
-        <div class="logo"  onclick="loadHomePage()">
-            <img src="/static/img/logo.ico" alt="HavenQuest Logo">
-        </div>
-        <div class="user-profile" onclick="userProfile()">
-            <span class="material-symbols-outlined">
-                account_circle
-            </span>
-        </div>
-    </header>
-    <div class="container">
-        <main class="property-details">
-            <h1>Property Details</h1>
-            <div id="propertyDetails" class="property-details-container">
-            </div>
-        </main>
+
+
+<header>
+    <div class="logo"  onclick="loadHomePage()">
+        <img src="/static/img/logo.ico" alt="HavenQuest Logo">
     </div>
+    <div class="welcome-container">
+        {% if session.logged_in %}
+            <div class="user-profile" onclick="userProfile()">
+                <span class="material-symbols-outlined">
+                    account_circle
+                </span>
+            </div>
+            <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Login</a></p>
+        {% endif %}
+    </div>
+</header>
+
+<div class="property-container">
+    <main class="individual-property-class">
+        <div class="property-image" id="property-image"></div>
+        <div class="property-details" id="property-details">
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Real Estate Properties. All rights reserved.</p>
+        </div>
+    </footer>
+</div>
+
 </body>
 </html>

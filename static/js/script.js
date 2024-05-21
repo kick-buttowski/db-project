@@ -243,8 +243,18 @@ function displayProperties(properties) {
         propertyBox.classList.add('property-box');
 
         var propertyImage = document.createElement('img');
-        propertyImage.src = property.image_url;
+        propertyImage.src = property.IMG;
         propertyBox.appendChild(propertyImage);
+
+        var favIcon = document.createElement('img');
+        favIcon.classList.add('favorite-icon')
+        favIcon.src = property.FAVOURITE ? "/static/img/favorited.png": "/static/img/not_favorited.png";
+        propertyBox.appendChild(favIcon);
+
+        var priceHeading = document.createElement('div');
+        priceHeading.classList.add('property-heading');
+        priceHeading.textContent = '₹' + property.PURCHASE_PRICE + " | " + property.AREA + " sqft";
+        propertyBox.appendChild(priceHeading);
 
         var propertyHeading = document.createElement('div');
         propertyHeading.classList.add('property-heading');
@@ -253,7 +263,7 @@ function displayProperties(properties) {
 
         var propertyDescription = document.createElement('div');
         propertyDescription.classList.add('property-description');
-        propertyDescription.textContent = property.PROPERTYNAME;
+        propertyDescription.textContent = property.NUMBEDROOMS + " BHK | " + property.NUMBATHROOMS + " BA | " + property.SOCIETYNAME;
         propertyBox.appendChild(propertyDescription);
 
         propertyList.appendChild(propertyBox);

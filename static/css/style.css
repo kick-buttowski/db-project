@@ -52,6 +52,7 @@ header {
 .logo {
   font-size: 24px;
   font-weight: bold;
+  margin-left: 5px;
   cursor: pointer;
 }
 
@@ -118,15 +119,26 @@ header {
   background-color: #0056b3;
 }
 
+.property-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: 100px;
+}
+
 .property-box {
+  position: relative;
   border: 1px solid #ccc;
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 20px;
-  width: calc(30% - 20px);
+  width: calc(32% - 20px);
   float: left;
   margin-right: 20px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
 .property-box:hover {
@@ -134,17 +146,28 @@ header {
 }
 
 .property-box img {
-  width: 100%;
+  width: 35%;
   border-radius: 5px;
+  margin-bottom: 10px;
 }
 
 .property-heading {
   font-weight: bold;
+  font-size: 15px;
   margin-top: 10px;
 }
 
 .property-description {
   margin-top: 5px;
+  font-size: 14px;
+}
+
+.favorite-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px !important;
+  height: auto;
 }
 
 .clearfix::after {
@@ -218,5 +241,43 @@ header {
 }
 
 #addFeatureBtn:hover {
-  background-color: #727272; /* Darker shade on hover */
+  background-color: #727272;
+}
+
+.property-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  align-items: center;
+}
+
+.individual-property-class {
+  display: flex;
+  flex-direction: row;
+  margin-top: 60px;
+  width: 60%;
+}
+
+.property-image {
+  flex: 1;
+  max-width: 50%;
+  background-size: cover;
+  background-position: center;
+}
+
+.property-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 0 20px;
+  margin-left: 50px;
+}
+
+.property-details h2 {
+  margin-top: 0;
+}
+
+.footer {
+  margin-top: auto;
 }

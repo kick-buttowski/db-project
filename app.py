@@ -20,7 +20,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'haha'
 app.config['MYSQL_DB'] = 'HavenQuest'
-app.config['CURRENT_USER_ID'] = '1635'
+app.config['CURRENT_USER_ID'] = '6520'
 
 FETCH_PROPERTY_CITY_AND_BEDROOMS = 'SELECT CITY, NUMBEDROOMS FROM PROPERTY GROUP BY CITY, NUMBEDROOMS'
 
@@ -35,7 +35,18 @@ LIMITED_PROPERTIES = """SELECT PROP.PROPERTYID,
         PROP.AREA,
         (SELECT PROPERTYID FROM FAVOURITES FV WHERE FV.PROPERTYID = PROP.PROPERTYID AND FV.USERID = %s) AS FAVOURITE,
         CONCAT(AG.FIRSTNAME, ' ', AG.LASTNAME) AS AGENTNAME,
-        SC.SOCIETYNAME 
+        SC.SOCIETYNAME,
+        CASE 
+			WHEN PROP.PROPERTYTYPE = 'Independent/Builder Floor' THEN '/static/img/house_3.png'
+			WHEN PROP.PROPERTYTYPE = 'Residential Apartment' THEN '/static/img/house_6.png'
+			WHEN PROP.PROPERTYTYPE = 'Independent House/Villa' THEN '/static/img/house_1.png'
+			WHEN PROP.PROPERTYTYPE = 'Residential Land' THEN '/static/img/house_7.png'
+			WHEN PROP.PROPERTYTYPE = 'Studio Apartment' THEN '/static/img/house_8.png'
+			WHEN PROP.PROPERTYTYPE = 'Serviced Apartments' THEN '/static/img/house_5.png'
+			WHEN PROP.PROPERTYTYPE = 'Farm House' THEN '/static/img/house_4.png'
+			WHEN PROP.PROPERTYTYPE = 'Other' THEN '/static/img/house_2.png'
+			ELSE '/static/img/house_2.png'
+		END AS IMG
         FROM PROPERTY AS PROP 
         INNER JOIN AGENT AG ON AG.AGENTID = PROP.AGENTID
         INNER JOIN SOCIETY SC ON SC.SOCIETYID = PROP.SOCIETYID 
@@ -54,7 +65,18 @@ PROPERTIES_SELECT_QUERY = """SELECT PROP.PROPERTYID,
         PROP.AREA,
         (SELECT PROPERTYID FROM FAVOURITES FV WHERE FV.PROPERTYID = PROP.PROPERTYID AND FV.USERID = %s) AS FAVOURITE,
         CONCAT(AG.FIRSTNAME, ' ', AG.LASTNAME) AS AGENTNAME,
-        SC.SOCIETYNAME 
+        SC.SOCIETYNAME,
+        CASE 
+			WHEN PROP.PROPERTYTYPE = 'Independent/Builder Floor' THEN '/static/img/house_3.png'
+			WHEN PROP.PROPERTYTYPE = 'Residential Apartment' THEN '/static/img/house_6.png'
+			WHEN PROP.PROPERTYTYPE = 'Independent House/Villa' THEN '/static/img/house_1.png'
+			WHEN PROP.PROPERTYTYPE = 'Residential Land' THEN '/static/img/house_7.png'
+			WHEN PROP.PROPERTYTYPE = 'Studio Apartment' THEN '/static/img/house_8.png'
+			WHEN PROP.PROPERTYTYPE = 'Serviced Apartments' THEN '/static/img/house_5.png'
+			WHEN PROP.PROPERTYTYPE = 'Farm House' THEN '/static/img/house_4.png'
+			WHEN PROP.PROPERTYTYPE = 'Other' THEN '/static/img/house_2.png'
+			ELSE '/static/img/house_2.png'
+		END AS IMG
         FROM PROPERTY AS PROP
         {joins}
         {filters}
@@ -65,6 +87,17 @@ PROPERTIES_SELECT_QUERY = """SELECT PROP.PROPERTYID,
 LIMIT_SELECT = """LIMIT {lim}"""
 
 FETCH_INDIVIDUAL_PROPERTY = """SELECT PROP.*, SC.*, AG.*, AGC.*, 
+        CASE 
+			WHEN PROP.PROPERTYTYPE = 'Independent/Builder Floor' THEN '/static/img/house_3.png'
+			WHEN PROP.PROPERTYTYPE = 'Residential Apartment' THEN '/static/img/house_6.png'
+			WHEN PROP.PROPERTYTYPE = 'Independent House/Villa' THEN '/static/img/house_1.png'
+			WHEN PROP.PROPERTYTYPE = 'Residential Land' THEN '/static/img/house_7.png'
+			WHEN PROP.PROPERTYTYPE = 'Studio Apartment' THEN '/static/img/house_8.png'
+			WHEN PROP.PROPERTYTYPE = 'Serviced Apartments' THEN '/static/img/house_5.png'
+			WHEN PROP.PROPERTYTYPE = 'Farm House' THEN '/static/img/house_4.png'
+			WHEN PROP.PROPERTYTYPE = 'Other' THEN '/static/img/house_2.png'
+			ELSE '/static/img/house_2.png'
+		END AS IMG,
         (SELECT PROPERTYID FROM FAVOURITES FV WHERE FV.PROPERTYID = PROP.PROPERTYID AND FV.USERID = %s) AS FAVOURITE 
         FROM PROPERTY AS PROP
         INNER JOIN AGENT AG ON AG.AGENTID = PROP.AGENTID
@@ -102,6 +135,10 @@ FETCH_FEATURE_NAMES_BY_CITY = """SELECT DISTINCT(FEATURENAME) FROM PROPERTY PROP
 	INNER JOIN PROPERTYFEATURE PF ON PF.PROPERTYID = PROP.PROPERTYID
 	INNER JOIN FEATURE FT ON FT.FEATUREID = PF.FEATUREID
     WHERE PROP.CITY = %s"""
+    
+FETCH_INDIVIDUAL_PROPERTY_FEATURES = """SELECT DISTINCT(FT.FEATURENAME) FROM PROPERTY PROP
+	INNER JOIN PROPERTYFEATURE PF ON PF.PROPERTYID = PROP.PROPERTYID AND PF.PROPERTYID = %s
+    INNER JOIN FEATURE FT ON FT.FEATUREID = PF.FEATUREID"""
 
 INNER_JOIN_AGENCY_AGENTS = """INNER JOIN AGENCY AGC ON AGC.AGENCYID = AG.AGENCYID"""
 
@@ -158,6 +195,7 @@ def random_properties():
         fetched_properties = cursor.fetchall()
         
         for property in fetched_properties:
+            # print(f"'{property['PROPERTYID']}',")
             properties_home.append(property)
     
     return jsonify(properties_home), 200
@@ -194,6 +232,20 @@ def fetch_ind_property():
     property = cursor.fetchone()
     
     return jsonify(property), 200
+
+
+@app.route('/api/fetch_ind_property/features', methods=['GET'])
+def fetch_ind_property_features():
+    # Hit the db and get individual proeprty details
+    cursor = db.cursor()
+    property_id = request.args.get('id')
+    
+    cursor.execute(FETCH_INDIVIDUAL_PROPERTY_FEATURES, (property_id))
+    features = cursor.fetchall()
+    
+    print(features)
+    
+    return jsonify(features), 200
 
 
 @app.route('/api/bedrooms', methods=['GET'])
